@@ -6,25 +6,32 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun App() {
     MaterialTheme(darkColorScheme()) {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
+        Box(
             modifier = Modifier
                 .safeContentPadding()
                 .fillMaxSize()
                 .background(Color.Black),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            contentAlignment = Alignment.Center
         ) {
-            Button(onClick = { showContent = !showContent; println("OUCH! That hurt!") }) {
-                Text("Click me!")
-            }
-
-            AnimatedVisibility(showContent) {
-                Text("gurt jumpscare", color = Color.White)
+            Column {
+                IFrame(
+                    src = "https://wikipedia.com",
+                    id = "yt1",
+                    visible = true,
+                    modifier = Modifier.width(300.dp).height(300.dp)
+                )
+                Text(
+                    text = "gurt: yo",
+                    color = Color.White,
+                    style = MaterialTheme.typography.headlineLarge
+                )
             }
         }
     }
