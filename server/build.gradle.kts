@@ -31,18 +31,29 @@ kotlin {
     }
 }
 
-tasks.register<Copy>("copyFrontend") {
+tasks.register<Copy>("copyFrontendDev") {
+    dependsOn(":client:jsBrowserDevelopmentWebpack")
+
+    from(project(":client").layout.buildDirectory.dir("kotlin-webpack/js/developmentExecutable"))
+    from(project(":client").layout.buildDirectory.dir("processedResources/js/main"))
+
+    into("src/jvmMain/resources/static")
+}
+
+tasks.register<Copy>("copyFrontendProd") {
     dependsOn(":client:jsBrowserDistribution")
     from(project(":client").layout.buildDirectory.file("dist/js/productionExecutable"))
     into("src/jvmMain/resources/static")
 }
 
 tasks.named("jvmProcessResources") {
-    dependsOn("copyFrontend")
+    dependsOn("copyFrontendDev")
+    //dependsOn("copyFrontendProd")
 }
 
 afterEvaluate {
     tasks.named("runJvm") {
-        dependsOn(":client:build")
+        //dependsOn(":client:build")
+        dependsOn(":client:jsBrowserDevelopmentWebpack")
     }
 }

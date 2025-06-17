@@ -13,6 +13,9 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
+### Android studio ###
+local.properties
+
 ### Kotlin ###
 .kotlin
 kotlin-js-store

@@ -29,10 +29,10 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
-            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel:2.9.0")
-            implementation("org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose:2.9.0")
+
+            //speed up build, check out "webpack.config.d/config.js"
+            implementation(npm("esbuild", "0.20.0"))
+            implementation(npm("esbuild-loader", "4.0.0"))
         }
     }
 }

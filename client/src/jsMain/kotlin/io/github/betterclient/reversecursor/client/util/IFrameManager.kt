@@ -1,4 +1,4 @@
-package io.github.betterclient.reversecursor.client
+package io.github.betterclient.reversecursor.client.util
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
@@ -8,6 +8,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionOnScreen
 import kotlinx.browser.document
+import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLIFrameElement
 
 @Composable
@@ -20,7 +21,7 @@ fun IFrame(
         try {
             position(coords, id, src)
         } catch (e: Exception) {
-            console.error("Error positioning iframe with id $id", e)
+            throw RuntimeException("Error positioning iframe with id $id", e)
         }
     })
 
@@ -66,4 +67,17 @@ fun position(coords: LayoutCoordinates, id: String, src: String) {
             height: ${size.height}px;
             border: none;
         """.trimIndent().replace("\n", " "))
+}
+
+object IFrameManager {
+    fun generateIFrameContainer() {
+        val div = document.createElement("div") as HTMLDivElement
+        div.id = "iframe-container"
+        document.body!!.appendChild(div)
+    }
+
+    fun moveIFrames() {
+        val iframeContainer = document.getElementById("iframe-container") as HTMLDivElement
+        document.body!!.appendChild(iframeContainer)
+    }
 }
