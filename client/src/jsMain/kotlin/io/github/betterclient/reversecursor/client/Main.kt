@@ -2,7 +2,7 @@ package io.github.betterclient.reversecursor.client
 
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
-import kotlinx.browser.document
+import kotlinx.browser.*
 import org.w3c.dom.HTMLDivElement
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -17,7 +17,11 @@ fun main() {
             val iframeContainer = document.getElementById("iframe-container") as HTMLDivElement
             document.body!!.appendChild(iframeContainer)
         } catch (e: Exception) {
-            console.error("Error during initialization", e)
+            if (e.stackTraceToString().contains("org_jetbrains_skiko")) {
+                window.location.reload()
+            }
+
+            e.printStackTrace()
         }
     })
 }
