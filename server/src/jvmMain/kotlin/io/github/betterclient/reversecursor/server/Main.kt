@@ -1,10 +1,12 @@
 package io.github.betterclient.reversecursor.server
 
+import io.github.betterclient.reversecursor.common.LinGanEncoder
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.defaultForFilePath
 import io.ktor.server.netty.Netty
 import io.ktor.server.engine.*
+import io.ktor.server.request.receiveText
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -17,6 +19,11 @@ fun main() {
                         it.readAllBytes()
                     }, contentType = ContentType.Text.Html
                 )
+            }
+
+            post("/generate") {
+                println(LinGanEncoder.decrypt(call.receiveText()))
+                call.respondText("OK.")
             }
 
             get("/{path...}") {

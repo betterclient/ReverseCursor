@@ -1,8 +1,8 @@
 package io.github.betterclient.reversecursor.client.util
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -25,7 +25,7 @@ fun IFrame(
         }
     })
 
-    AnimatedVisibility(visible) {
+    LaunchedEffect(visible) {
         if (visible) {
             //create, it will be positioned later
             val i = document.getElementById(id)?: (document.createElement("iframe").also {

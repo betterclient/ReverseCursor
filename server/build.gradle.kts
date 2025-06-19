@@ -27,6 +27,7 @@ kotlin {
             implementation("org.slf4j:slf4j-simple:2.0.17")
             implementation("io.ktor:ktor-server-core:3.1.3")
             implementation("io.ktor:ktor-server-netty:3.1.3")
+            parent?.let { implementation(it) }
         }
     }
 }

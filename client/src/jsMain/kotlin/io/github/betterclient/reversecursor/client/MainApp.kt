@@ -2,6 +2,7 @@ package io.github.betterclient.reversecursor.client
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -18,34 +19,52 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
+import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import io.github.betterclient.reversecursor.client.util.Icons
+import io.github.betterclient.reversecursor.common.LinGanEncoder
+import kotlinx.browser.window
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.await
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.w3c.dom.url.URL
+import org.w3c.fetch.RequestInit
+import kotlin.js.json
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.hypot
+import kotlin.math.sin
+import kotlin.random.Random
 
 @Composable
 fun MainApp() {
     val themee = remember { mutableStateOf(darkColorScheme()) }
     var theme by themee
-    var darkMode by remember { mutableStateOf(true) }
+    val darkMode0 = remember { mutableStateOf(true) }
+    var darkMode by darkMode0
 
     MaterialTheme(
         theme,
     ) {
-        Box(
-            modifier = Modifier
-                .safeContentPadding()
-                .fillMaxSize()
-                .background(if (darkMode) {
-                    Color.DarkGray
-                } else {
-                    Color.LightGray
-                }),
-            contentAlignment = Alignment.Center
-        ) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopEnd) {
+        BoxWithBackground {
+            Box(Modifier.fillMaxSize().safeContentPadding(), contentAlignment = Alignment.TopEnd) {
                 ColorSchemeSwitcher(darkMode = darkMode) {
                     darkMode = !darkMode
                     themee.value = if (darkMode) darkColorScheme() else lightColorScheme()
@@ -53,20 +72,30 @@ fun MainApp() {
             }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "Reverse Cursor",
-                    color = theme.onSurface,
-                    style = TextStyle(fontSize = 50.sp)
-                )
+                Box(
+                    Modifier
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Reverse Cursor",
+                            color = theme.onSurface,
+                            style = TextStyle(fontSize = 50.sp)
+                        )
+
+                        Spacer(Modifier.height(16.dp))
+
+                        val rainbow by animatedRainbowColor()
+                        Text(
+                            text = "Have an idea? We'll ruin it!",
+                            color = rainbow,
+                            style = TextStyle(fontSize = 20.sp)
+                        )
+                    }
+                }
 
                 Spacer(Modifier.height(16.dp))
-
-                val rainbow by animatedRainbowColor()
-                Text(
-                    text = "Have an idea? We'll ruin it!",
-                    color = rainbow,
-                    style = TextStyle(fontSize = 16.sp)
-                )
 
                 Row {
                     UI(theme)
@@ -81,10 +110,13 @@ fun UI(theme: ColorScheme) {
     Box(
         Modifier
             .size(750.dp, 375.dp)
+            .shadow(
+                elevation = 32.dp,
+                shape = RoundedCornerShape(16.dp),
+                spotColor = theme.surface,
+            )
             .background(
-                theme.surface.copy(
-                    alpha = 0.8f
-                ),
+                theme.surface,
                 RoundedCornerShape(16.dp)
             )
     ) {
@@ -110,12 +142,13 @@ fun UI(theme: ColorScheme) {
                     }
                 )
 
-                IconButton(onClick = {
+                Button(onClick = {
                     submit(input)
                 }, content = {
                     Icon(
                         Icons.Send,
-                        contentDescription = "send"
+                        contentDescription = "send",
+                        modifier = Modifier.size(75.dp)
                     )
                 }, modifier = Modifier.size(100.dp))
             }
@@ -130,7 +163,11 @@ fun AnimateSuggestions() {
         "Build me a file sharing website",
         "Build me a youtube clone",
         "Build me a social media platform",
-        "Build me a messaging app"
+        "Build me a messaging app",
+        "Build me a music streaming service",
+        "Build me a food delivery app",
+        "Build me a ride sharing platform",
+        "Build me a video conferencing app"
     )
 
     var index by remember { mutableStateOf(0) }
@@ -138,7 +175,7 @@ fun AnimateSuggestions() {
     LaunchedEffect(Unit) {
         while (true) {
             delay(1500)
-            index = (index + 1) % values.size
+            index = values.filterIndexed { i, _ -> i != index }.random().let { values.indexOf(it) }
         }
     }
 
@@ -187,13 +224,107 @@ fun ColorSchemeSwitcher(
     val transition = updateTransition(targetState = darkMode, label = "IconTransition")
     val darkModeAlpha by transition.animateFloat(label = "darkModeAlpha") { if (it) 1f else 0f }
     val lightModeAlpha by transition.animateFloat(label = "lightModeAlpha") { if (it) 0f else 1f }
+    val bgColor by animateColorAsState(if(darkMode) Color.LightGray else Color.DarkGray)
 
-    Box(Modifier.clickable { onToggle() }) {
+    Box(Modifier.clickable { onToggle() }.background(color = bgColor, shape = RoundedCornerShape(16.dp))) {
         Icon(imageVector = Icons.DarkMode, contentDescription = null, modifier = Modifier.alpha(darkModeAlpha).size(100.dp))
         Icon(imageVector = Icons.LightMode, contentDescription = null, modifier = Modifier.alpha(lightModeAlpha).size(100.dp))
     }
 }
 
+@Composable
+fun BoxWithBackground(
+    content: @Composable () -> Unit
+) {
+    var size by remember { mutableStateOf(IntSize.Zero) }
+    val density = LocalDensity.current
+
+    suspend fun createBG(): ImageBitmap {
+        return withContext(Dispatchers.Default) {
+            val bitmap = ImageBitmap(size.width, size.height)
+            val brush = Brush.horizontalGradient(
+                colors = listOf(
+                    Color.LightGray, Color(0xFF666666)
+                ),
+                startX = 0f,
+                endX = size.width.toFloat()
+            )
+
+            CanvasDrawScope().draw(
+                density = density,
+                layoutDirection = androidx.compose.ui.unit.LayoutDirection.Ltr,
+                size = size.toSize(),
+                canvas = Canvas(bitmap)
+            ) {
+                drawRect(brush = brush, size = size.toSize())
+            }
+
+            val random = Random.Default
+
+            val blockSize = 16
+            val canvas = Canvas(bitmap)
+            val startX = (size.width * 0.75f).toInt().coerceAtMost(size.width)
+            for (xBlock in startX until size.width step blockSize) {
+                val distortionFactor = ((xBlock - startX).toFloat() / (size.width - startX)).coerceAtMost(1f)
+
+                for (yBlock in 0 until size.height step blockSize) {
+                    if (random.nextFloat() < distortionFactor * 0.3f) {
+                        val color = if (random.nextBoolean()) Color.Black else Color.White
+
+                        val rect = Rect(
+                            left = xBlock.toFloat(),
+                            top = yBlock.toFloat(),
+                            right = (xBlock + blockSize).coerceAtMost(size.width).toFloat(),
+                            bottom = (yBlock + blockSize).coerceAtMost(size.height).toFloat()
+                        )
+
+                        val paint = Paint().apply {
+                            this.color = color.copy(alpha = 0.1f)
+                        }
+
+                        canvas.drawRect(rect, paint)
+                    }
+                }
+            }
+
+            bitmap
+        }
+    }
+
+    var background by remember { mutableStateOf<ImageBitmap?>(null) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            background = createBG()
+            delay(500)
+        }
+    }
+
+    LaunchedEffect(size) {
+        background = createBG()
+    }
+
+    Box(
+        modifier = Modifier
+            .onSizeChanged { size = it }
+            .safeContentPadding()
+            .fillMaxSize()
+            .drawBehind {
+                drawImage(background!!)
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        content()
+    }
+}
+
 fun submit(text: String) {
-    println(text)
+    MainScope().launch {
+        val message = LinGanEncoder.encrypt(text)
+        window.fetch("/generate", object : RequestInit {
+            override var method: String? = "POST"
+            override var headers = json("Content-Type" to "application/json")
+            override var body = message
+        }).await()
+    }
 }

@@ -13,7 +13,7 @@ kotlin {
         moduleName = "reverse-cursor-kotlin-clientside"
         browser {
             commonWebpackConfig {
-                outputFileName = "koutrev.js"
+                outputFileName = "reverse-cursor-clientside.js"
             }
 
             testTask {
@@ -29,6 +29,7 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.ui)
+            parent?.let { implementation(it) }
 
             //speed up build, check out "webpack.config.d/config.js"
             implementation(npm("esbuild", "0.20.0"))
