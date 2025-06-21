@@ -1,5 +1,6 @@
 package io.github.betterclient.reversecursor.client
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,6 +17,7 @@ import io.github.betterclient.reversecursor.client.util.IFrameManager
 import io.github.betterclient.reversecursor.client.util.Icons
 import io.github.betterclient.reversecursor.common.LinGanEncoder
 import kotlinx.browser.window
+import kotlinx.coroutines.delay
 import org.w3c.fetch.RequestInit
 
 var chat = mutableStateListOf<ConversationPiece>()
@@ -27,15 +29,36 @@ fun Submit() {
     val darkMode0 = remember { mutableStateOf(true) }
     var darkMode by darkMode0
 
+    val iframeSrc = remember { mutableStateOf(IFrameManager.getSRC("preview-1")) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            val current = IFrameManager.getSRC("preview-1")
+            if (iframeSrc.value != current) {
+                iframeSrc.value = current
+            }
+            delay(500)
+        }
+    }
+    val src by iframeSrc
+    val isBlank = src == "about:blank"
+    val iframeWeight by animateFloatAsState(if (isBlank) 0.3f else 1f)
+    val iframeTargetWeight = if (isBlank) 0.3f else 1f
+
     MaterialTheme(theme) {
         Box(
             Modifier.fillMaxSize().background(theme.surface),
             contentAlignment = Alignment.TopCenter
         ) {
             val scrollbar = rememberScrollState()
+
             Row {
                 Chat(scrollbar, theme, Modifier.weight(1f))
-                Preview(theme, Modifier.weight(1f))
+                IFrame(
+                    "about:blank",
+                    Modifier.weight(iframeWeight).fillMaxHeight(),
+                    visible = true, "preview-1"
+                )
             }
 
             VerticalScrollbar(
@@ -45,21 +68,18 @@ fun Submit() {
         }
     }
 
-    Box(Modifier.fillMaxWidth(0.5f).safeContentPadding(), contentAlignment = Alignment.TopEnd) {
+    val animated by animateFloatAsState(if (iframeTargetWeight == 0.3f) 0.75f else 0.5f)
+    Box(
+        Modifier
+            .fillMaxWidth(animated)
+            .safeContentPadding(),
+        contentAlignment = Alignment.TopEnd
+    ) {
         ColorSchemeSwitcher(darkMode = darkMode) {
             darkMode = !darkMode
             themee.value = if (darkMode) darkColorScheme() else lightColorScheme()
         }
     }
-}
-
-@Composable
-fun Preview(theme: ColorScheme, modifier: Modifier) {
-    IFrame(
-        "about:blank",
-        modifier.fillMaxHeight(),
-        visible = true, "preview-1"
-    )
 }
 
 @Composable
@@ -87,6 +107,7 @@ fun TextFields() {
             Button(onClick = {
                 if (chat.last().role == "assistant") {
                     chat.add(ConversationPiece("user", message))
+
                     window.fetch("/message", RequestInit(
                         method = "POST",
                         body = "${LinGanEncoder.encrypt(message)}:${LinGanEncoder.encrypt(chatHash)}"
@@ -99,6 +120,8 @@ fun TextFields() {
                             IFrameManager.setSRC("preview-1", LinGanEncoder.decrypt(message[1]))
                         }
                     }
+
+                    message = ""
                 }
             }, content = {
                 Icon(
@@ -136,7 +159,35 @@ fun AIChatBox(scrollbar: ScrollState, theme: ColorScheme) {
                 Text(
                     piece.message,
                     style = TextStyle(
-                        fontSize = 32.sp
+                        fontSize = 16.sp
+                    ),
+                    modifier = Modifier
+                        .background(theme.primary, shape = RoundedCornerShape(8.dp))
+                        .padding(8.dp)
+                )
+            }
+        }
+        if (chat.last().role == "user") {
+            Row(
+                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            ) {
+                val dotCount by remember { mutableStateOf(3) }
+                val animatedDots = remember { mutableStateOf("...") }
+                LaunchedEffect(chat.size) {
+                    while (chat.lastOrNull()?.role == "user") {
+                        for (i in 1..dotCount) {
+                            animatedDots.value = ".".repeat(i)
+                            delay(400)
+                        }
+                    }
+                }
+
+                val text by animatedDots
+                Text(
+                    text,
+                    style = TextStyle(
+                        fontSize = 16.sp
                     ),
                     modifier = Modifier
                         .background(theme.primary, shape = RoundedCornerShape(8.dp))

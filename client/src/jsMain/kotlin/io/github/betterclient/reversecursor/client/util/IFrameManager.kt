@@ -86,4 +86,9 @@ object IFrameManager {
         val i = document.getElementById(id)
         (i as HTMLIFrameElement).src = src
     }
+
+    fun getSRC(id: String): String {
+        val i = document.getElementById(id) ?: return "about:blank"
+        return (i as HTMLIFrameElement).src
+    }
 }
