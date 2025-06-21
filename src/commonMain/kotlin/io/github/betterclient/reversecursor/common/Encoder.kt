@@ -1,5 +1,8 @@
 package io.github.betterclient.reversecursor.common
 
+//this is not safe
+//this was made for just fun
+//and to confuse people looking at network tab
 object LinGanEncoder {
     private val tokens = listOf("lin", "gan", "gu", "li", "guli", "guacha")
 

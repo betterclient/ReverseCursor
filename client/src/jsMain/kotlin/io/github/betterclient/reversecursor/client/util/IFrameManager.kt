@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionOnScreen
+import io.github.betterclient.reversecursor.common.LinGanEncoder
 import kotlinx.browser.document
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLIFrameElement
@@ -79,5 +80,10 @@ object IFrameManager {
     fun moveIFrames() {
         val iframeContainer = document.getElementById("iframe-container") as HTMLDivElement
         document.body!!.appendChild(iframeContainer)
+    }
+
+    fun setSRC(id: String, src: String) {
+        val i = document.getElementById(id)
+        (i as HTMLIFrameElement).src = src
     }
 }

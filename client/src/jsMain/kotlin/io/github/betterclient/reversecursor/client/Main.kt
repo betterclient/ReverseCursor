@@ -2,6 +2,7 @@ package io.github.betterclient.reversecursor.client
 
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
+import io.github.betterclient.reversecursor.client.util.ComposeHandler
 import io.github.betterclient.reversecursor.client.util.IFrameManager
 import kotlinx.browser.*
 
@@ -11,11 +12,11 @@ fun main() {
         try {
             IFrameManager.generateIFrameContainer()
             ComposeViewport(document.body!!) {
-                MainApp()
+                ComposeHandler.content()
             }
 
             IFrameManager.moveIFrames()
-        } catch (e: dynamic) {
+        } catch (_: dynamic) {
             //This is hell.
             window.location.reload()
         }

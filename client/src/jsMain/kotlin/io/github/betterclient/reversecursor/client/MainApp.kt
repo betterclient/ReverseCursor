@@ -1,15 +1,7 @@
 package io.github.betterclient.reversecursor.client
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.togetherWith
-import androidx.compose.animation.with
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,40 +9,23 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.draw.*
+import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
-import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.toSize
+import androidx.compose.ui.unit.*
+import io.github.betterclient.reversecursor.client.util.ComposeHandler
+import io.github.betterclient.reversecursor.client.util.IFrameManager
 import io.github.betterclient.reversecursor.client.util.Icons
 import io.github.betterclient.reversecursor.common.LinGanEncoder
-import kotlinx.browser.window
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.await
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.w3c.dom.url.URL
+import kotlinx.browser.*
+import kotlinx.coroutines.*
+import org.w3c.dom.HTMLIFrameElement
 import org.w3c.fetch.RequestInit
 import kotlin.js.json
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.hypot
-import kotlin.math.sin
 import kotlin.random.Random
 
 @Composable
@@ -252,7 +227,7 @@ fun BoxWithBackground(
 
             CanvasDrawScope().draw(
                 density = density,
-                layoutDirection = androidx.compose.ui.unit.LayoutDirection.Ltr,
+                layoutDirection = LayoutDirection.Ltr,
                 size = size.toSize(),
                 canvas = Canvas(bitmap)
             ) {
@@ -319,12 +294,25 @@ fun BoxWithBackground(
 }
 
 fun submit(text: String) {
+    if (text.isEmpty()) return
+
     MainScope().launch {
         val message = LinGanEncoder.encrypt(text)
+        chat = mutableStateListOf(ConversationPiece("user", text))
+
+        ComposeHandler.content = { Submit() }
         window.fetch("/generate", object : RequestInit {
             override var method: String? = "POST"
             override var headers = json("Content-Type" to "application/json")
             override var body = message
-        }).await()
+        }).then {
+            it.text().then { str ->
+                val split = str.split(":")
+
+                chatHash = LinGanEncoder.decrypt(split[2])
+                chat.add(ConversationPiece("assistant", LinGanEncoder.decrypt(split[0])))
+                IFrameManager.setSRC("preview-1", LinGanEncoder.decrypt(split[1]))
+            }
+        }
     }
 }

@@ -22,8 +22,30 @@ fun main() {
             }
 
             post("/generate") {
-                println(LinGanEncoder.decrypt(call.receiveText()))
-                call.respondText("OK.")
+                val text = LinGanEncoder.decrypt(call.receiveText())
+                val output = generate(text)
+
+                call.respondText(text =
+                    LinGanEncoder.encrypt(output.output)+
+                    ":"+
+                    LinGanEncoder.encrypt(output.link)+
+                    ":"+
+                    LinGanEncoder.encrypt(output.hash)
+                )
+            }
+
+            post("/message") {
+                val t = call.receiveText().split(":")
+                val chatInput = LinGanEncoder.decrypt(t[0])
+                val chatHash = LinGanEncoder.decrypt(t[1])
+
+                val output = message(chatInput, chatHash)
+
+                call.respondText(text =
+                    LinGanEncoder.encrypt(output.output) +
+                    ":" +
+                    LinGanEncoder.encrypt(output.link)
+                )
             }
 
             get("/{path...}") {
