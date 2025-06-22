@@ -22,6 +22,8 @@ import org.w3c.fetch.RequestInit
 
 var chat = mutableStateListOf<ConversationPiece>()
 
+const val IFRAME_MINIFIED_SIZE = 0.1f
+
 @Composable
 fun Submit() {
     val themee = remember { mutableStateOf(darkColorScheme()) }
@@ -42,8 +44,8 @@ fun Submit() {
     }
     val src by iframeSrc
     val isBlank = src == "about:blank"
-    val iframeWeight by animateFloatAsState(if (isBlank) 0.3f else 1f)
-    val iframeTargetWeight = if (isBlank) 0.3f else 1f
+    val iframeWeight by animateFloatAsState(if (isBlank) IFRAME_MINIFIED_SIZE else 1f)
+    val iframeTargetWeight = if (isBlank) IFRAME_MINIFIED_SIZE else 1f
 
     MaterialTheme(theme) {
         Box(
@@ -68,7 +70,7 @@ fun Submit() {
         }
     }
 
-    val animated by animateFloatAsState(if (iframeTargetWeight == 0.3f) 0.75f else 0.5f)
+    val animated by animateFloatAsState(if (iframeTargetWeight == IFRAME_MINIFIED_SIZE) 0.95f else 0.5f)
     Box(
         Modifier
             .fillMaxWidth(animated)
@@ -143,7 +145,7 @@ fun AIChatBox(scrollbar: ScrollState, theme: ColorScheme) {
             "Reverse Cursor",
             style = MaterialTheme.typography.headlineLarge,
             modifier = Modifier.padding(bottom = 16.dp),
-            color = Color.White
+            color = theme.onSurface
         )
         Spacer(Modifier.height(48.dp))
 
