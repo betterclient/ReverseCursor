@@ -49,13 +49,13 @@ tasks.register<Copy>("copyFrontendProd") {
 }
 
 tasks.named("jvmProcessResources") {
-    dependsOn("copyFrontendDev")
-    //dependsOn("copyFrontendProd")//UNCOMMENT
+    //dependsOn("copyFrontendDev")
+    dependsOn("copyFrontendProd")
 }
 
 afterEvaluate {
     tasks.named("runJvm") {
-        //dependsOn(":client:build") //UNCOMMENT
-        dependsOn(":client:jsBrowserDevelopmentWebpack")
+        dependsOn(":client:build")
+        //dependsOn(":client:jsBrowserDevelopmentWebpack")
     }
 }

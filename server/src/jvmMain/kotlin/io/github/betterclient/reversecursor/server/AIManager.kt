@@ -4,6 +4,7 @@ import io.github.betterclient.reversecursor.server.ai.GeminiManager
 import io.github.betterclient.reversecursor.server.ai.Prompt
 import io.github.betterclient.reversecursor.server.ai.executingUUID
 import io.github.sashirestela.openai.domain.chat.ChatMessage
+import java.io.File
 import java.util.UUID
 
 val prompts = mutableMapOf<UUID, Prompt>()
@@ -25,6 +26,17 @@ fun generate(input: String): GenerateOutput {
         .replace(Regex("\\s+"), " ")
         .trim()
 
+    val logPrompt = File("../logs/${hash}.txt")
+    logPrompt.writeText(prompt.conversation.joinToString("\n") {
+        when (it) {
+            is ChatMessage.SystemMessage -> "SYSTEM"
+            is ChatMessage.UserMessage -> "User: ${it.content}"
+            is ChatMessage.AssistantMessage -> "Assistant: ${it.content}"
+            is ChatMessage.ToolMessage -> "Tool: ${it.toolCallId} - ${it.content}"
+            else -> "Unknown message type"
+        }
+    })
+
     return GenerateOutput(combinedContent, "/view/${hash}/", hash.toString())
 }
 
@@ -43,6 +55,17 @@ fun message(input: String, hash: String): MessageOutput {
         .joinToString(" ") { it.trim() }
         .replace(Regex("\\s+"), " ")
         .trim()
+
+    val logPrompt = File("../logs/${hash}.txt")
+    logPrompt.writeText(prompt.conversation.joinToString("\n") {
+        when (it) {
+            is ChatMessage.SystemMessage -> "SYSTEM"
+            is ChatMessage.UserMessage -> "User: ${it.content}"
+            is ChatMessage.AssistantMessage -> "Assistant: ${it.content}"
+            is ChatMessage.ToolMessage -> "Tool: ${it.toolCallId} - ${it.content}"
+            else -> "Unknown message type"
+        }
+    })
 
     return MessageOutput(combinedContent, "/view/${hash}/")
 }
