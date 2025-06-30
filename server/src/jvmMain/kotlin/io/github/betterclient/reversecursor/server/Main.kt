@@ -4,8 +4,10 @@ import io.github.betterclient.reversecursor.common.LinGanEncoder
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.defaultForFilePath
+import io.ktor.server.application.install
 import io.ktor.server.netty.Netty
 import io.ktor.server.engine.*
+import io.ktor.server.plugins.compression.*
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -13,6 +15,8 @@ import java.util.UUID
 
 fun main() {
     embeddedServer(Netty, port = 8888) {
+        install(Compression)
+
         routing {
             get("/") {
                 call.respondBytes(

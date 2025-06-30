@@ -5,17 +5,25 @@ import androidx.compose.ui.window.ComposeViewport
 import io.github.betterclient.reversecursor.client.util.ComposeHandler
 import io.github.betterclient.reversecursor.client.util.IFrameManager
 import kotlinx.browser.*
+import kotlinx.coroutines.*
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     document.addEventListener("DOMContentLoaded", {
         try {
-            IFrameManager.generateIFrameContainer()
-            ComposeViewport(document.body!!) {
-                ComposeHandler.content()
+            suspend fun sleepMs(ms: Long) {
+                delay(ms)
             }
 
-            IFrameManager.moveIFrames()
+            CoroutineScope(Dispatchers.Default).launch {
+                sleepMs(100)
+                IFrameManager.generateIFrameContainer()
+                ComposeViewport(document.body!!) {
+                    ComposeHandler.content()
+                }
+
+                IFrameManager.moveIFrames()
+            }
         } catch (_: dynamic) {
             //This is hell.
             window.location.reload()
