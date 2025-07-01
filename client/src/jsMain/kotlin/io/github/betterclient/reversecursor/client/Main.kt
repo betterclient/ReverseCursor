@@ -12,18 +12,15 @@ import org.jetbrains.skiko.wasm.onWasmReady
 fun main() {
     document.addEventListener("DOMContentLoaded", {
         try {
-            suspend fun sleepMs(ms: Long) {
-                delay(ms)
-            }
-
             CoroutineScope(Dispatchers.Default).launch {
-                sleepMs(100)
                 IFrameManager.generateIFrameContainer()
 
                 onWasmReady {
                     ComposeViewport(document.body!!) {
                         ComposeHandler.content()
                     }
+
+                    document.getElementById("downloader")!!.remove()
                 }
 
                 IFrameManager.moveIFrames()
