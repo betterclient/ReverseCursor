@@ -21,9 +21,8 @@ fun main() {
                     }
 
                     document.getElementById("downloader")!!.remove()
+                    IFrameManager.moveIFrames()
                 }
-
-                IFrameManager.moveIFrames()
             }
         } catch (_: dynamic) {
             //This is hell.
