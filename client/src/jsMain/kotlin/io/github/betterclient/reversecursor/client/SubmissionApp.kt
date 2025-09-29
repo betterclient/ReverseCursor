@@ -179,7 +179,7 @@ fun AIChatBox(scrollbar: ScrollState, theme: ColorScheme) {
                 LaunchedEffect(chat.size) {
                     while (chat.lastOrNull()?.role == "user") {
                         for (i in 1..dotCount) {
-                            animatedDots.value = ".".repeat(i)
+                            animatedDots.value = ".".repeat(i) + " generating, please wait!"
                             delay(400)
                         }
                     }

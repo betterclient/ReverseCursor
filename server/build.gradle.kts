@@ -4,9 +4,24 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 
 plugins {
     kotlin("multiplatform") version "2.1.21"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 dependencies { }
+
+tasks {
+    val fatJar by registering(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
+        archiveBaseName.set("reversecursor")
+        archiveClassifier.set("")
+        archiveVersion.set("")
+
+        from(kotlin.jvm().compilations["main"].output)
+        configurations = listOf(project.configurations["jvmRuntimeClasspath"])
+        manifest {
+            attributes["Main-Class"] = "io.github.betterclient.reversecursor.server.MainKt"
+        }
+    }
+}
 
 kotlin {
     jvm {

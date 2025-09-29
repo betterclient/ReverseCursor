@@ -7,6 +7,7 @@ object LinGanEncoder {
     private val tokens = listOf("lin", "gan", "gu", "li", "guli", "guacha")
 
     fun encrypt(input: String): String {
+        if(true) return input
         val bytes = input.encodeToByteArray()
         val sb = StringBuilder()
         for (b in bytes) {
@@ -19,6 +20,7 @@ object LinGanEncoder {
     }
 
     fun decrypt(encoded: String): String {
+        if(true) return encoded
         val parts = encoded.split("\\s+".toRegex())
         if (parts.size % 4 != 0 && !parts.isEmpty()) throw IllegalArgumentException("Invalid encoded string length")
 
