@@ -44,7 +44,8 @@ object GeminiManager {
                     generate(prompt) //recurse if we need to handle tool calls
                 }
                 return
-            } catch (_: OpenAIException.RateLimitException) {
+            } catch (e: Exception) {
+                e.printStackTrace()
                 continue
             }
         }

@@ -27,16 +27,20 @@ fun main() {
             }
 
             post("/generate") {
-                val text = LinGanEncoder.decrypt(call.receiveText())
-                val output = generate(text)
+                try {
+                    val text = LinGanEncoder.decrypt(call.receiveText())
+                    val output = generate(text)
 
-                call.respondText(text =
-                    LinGanEncoder.encrypt(output.output)+
-                    ":"+
-                    LinGanEncoder.encrypt(output.link)+
-                    ":"+
-                    LinGanEncoder.encrypt(output.hash)
-                )
+                    call.respondText(text =
+                        LinGanEncoder.encrypt(output.output)+
+                                ":"+
+                                LinGanEncoder.encrypt(output.link)+
+                                ":"+
+                                LinGanEncoder.encrypt(output.hash)
+                    )
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
 
             post("/message") {
